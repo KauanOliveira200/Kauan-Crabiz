@@ -1,0 +1,26 @@
+<!-- login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/style2.css">
+    <title>Login</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <div class="img">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbdP_DmbWQmx4NLWkBGnF4G90I07cOvtvW1g&s" alt="">
+    </div>
+    <form action="/login" method="post">
+        <label for="telefone">Telefone:</label>
+        <input type="text" id="telefone" name="telefone"><br><br>
+        <label for="senha">Password:</label>
+        <input type="password" id="senha" name="senha"><br><br>
+        <input type="submit" value="Login">
+    </form>
+    <div class="rodape">
+        <p>Não tem uma conta? <a href="/cadastro_via_form">Cadastre-se aqui</a>.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- IMPORTANTO JQUERY -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    
+    <title>Crabiz</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        #top-bar {
+            background-color: #c10000;
+            color: #FFF;
+            padding: 10px;
+            text-align: center;
+        }
+
+        #chat-container {
+            padding: 10px;
+            height: calc(100vh - 150px);
+            overflow-y: scroll;
+        }
+
+        #chat-container p {
+            background-color: #f8c6c6;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        #input-container {
+            display: flex;
+            align-items: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #F4F4F4;
+            padding: 10px;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #input-container input[type="text"] {
+            padding: 10px;
+            border: none;
+            outline: none;
+            flex: 1;
+        }
+        #usuario {
+            padding: 10px;
+            border: none;
+            outline: none;
+            flex: 1;
+        }
+
+        #usuario {
+            margin-right: 10px;
+            width: 30%;
+        }
+
+        #input-container input#mensagem {
+            flex: 1;
+        }
+
+        #input-container button {
+            padding: 10px 20px;
+            background-color: #e00000;
+            color: #FFF;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="top-bar">
+        <h1>Crabiz</h1>
+        <!-- Exibe o nome do usuário logado -->
+        {% if "usuario_logado" in session %}
+            <p>Usuário: {{ session["usuario_logado"]["nome"] }}</p>
+        {% endif %}
+    </div>
+
+    <div id="chat-container" class="mensagens">
+        <p>Bem-vindo ao Crabiz</p>
+    </div>
+
+    <div id="input-container">
+        <select name="usuario" id="usuario">
+            <option value="telefone">Nome</option>
+        </select>
+        <div style="width: 10px;"></div>
+        <input type="text" id="mensagem" placeholder="Mensagem" required>
+        <button id="botao" onclick="enviarMensagem()">Enviar</button>
+    </div>
+
+    <script type="text/javascript">
+        /* FUNÇÃO QUE SOLICITA OS USUÁRIOS CADASTRADOS E INCLUI NO CAMPO SELECT */
+        function mostra_usuarios(){
+            /* Montando a solicitação AJAX requisitando os contatos */
+            $.ajax({
+                url: "/retorna_usuarios",
+                type: "GET",
+                success: function(usuarios){
+                    for(let i =0; i < usuarios.length; i++){
+                        let texto_html = '<option value="'+usuarios[i]['telefone']+'">'+usuarios[i]['nome']+'</option>'
+                        $('#usuario').append(texto_html)
+                    }
+                },
+                error: function(){
+                    alert("Erro ao recuperar os contatos!")
+                }
+            })
+        }
+
+        /* EXECUTA A FUNÇÃO DE mostra_usuarios ASSIM QUE A PÁGINA É ABERTA */
+        $(document).ready(mostra_usuarios())
+
+        /* EVENTO DE CLIQUE NO BOTÃO "ENVIAR" */
+        $("#botao").click(function(){
+            let destinatario = $("#usuario").val();
+            let mensagem = $("#mensagem").val();
+
+            $.ajax({
+                url: "/enviar_mensagem/" + destinatario,
+                type: "POST",
+                data: JSON.stringify({ destinatario: destinatario, mensagem: mensagem }),
+                contentType: "application/json",
+                success: function(response){
+                    console.log(response);
+                    // Limpar campo de mensagem após o envio
+                    $("#mensagem").val("");
+                },
+                error: function(){
+                    alert("Você é muito burro tio")
+                }
+            });
+        });
+
+        /* FUNÇÃO PARA ATUALIZAR O CHAT A CADA 5 SEGUNDOS */
+        function mostraMensagens(){
+            $("#chat-container").empty()
+            $.ajax({
+                url:"/get/mensagens/"+$("#usuario").val(),
+                type:"GET",
+                success: function (mensagens) {
+                    for (let i=0; i < mensagens.length; i++){
+                        tag = "<p>"+mensagens[i]["mensagem"]+"</p>"
+                        $("#chat-container").append(tag)
+                    }
+                }
+            })
+        }
+        setInterval(mostraMensagens,5000);
+    </script>
+
+    <script type="text/javascript">
+        // Função para enviar a mensagem
+        function enviarMensagem() {
+            // Coletar os dados do destinatário e mensagem
+            var dados = {
+                destinatario: $("#usuario").val(), // Coleta o valor do campo de destinatário
+                mensagem: $("#mensagem").val() // Coleta o valor do campo de mensagem
+            };
+
+            // Enviar os dados para a rota Flask via AJAX
+            $.ajax({
+                url: "/enviar_mensagem", // Endereço da rota Flask que irá processar a mensagem
+                type: "POST", // Método de envio da requisição
+                data: JSON.stringify(dados), // Converter os dados em JSON e enviar
+                contentType: "application/json", // Tipo de conteúdo sendo enviado (JSON)
+                success: function() { // Função executada em caso de sucesso
+                    // Ação de sucesso: exibir um alerta indicando que a mensagem foi enviada com sucesso
+                    alert("Mensagem enviada com sucesso");
+                },
+                error: function() { // Função executada em caso de erro
+                    // Ação de erro: exibir um alerta indicando que ocorreu um erro ao enviar a mensagem
+                    alert("Erro ao enviar mensagem");
+                }
+            });
+        }
+    </script>
+    
+</body>
+</html>
