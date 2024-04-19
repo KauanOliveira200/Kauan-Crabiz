@@ -185,4 +185,4 @@ def enviar_mensagem_ajax():
         return jsonify({"status": "Erro ao enviar mensagem"}), 5000
 
 
-app.run(debug=True)
+app.run(host="0.0.0.0", port="8080")
